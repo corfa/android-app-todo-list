@@ -14,6 +14,7 @@ import com.example.android_app.MainActivity
 import com.example.android_app.MyApplication
 import com.example.android_app.R
 import com.example.android_app.data.Token
+import com.example.android_app.models.SignUpViewModel
 import com.example.android_app.network.ApiManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,6 +31,8 @@ class SingUpFragment @Inject constructor() : Fragment() {
     lateinit var apiManager: ApiManager
     @Inject
     lateinit var blankFragment: BlankFragment
+    @Inject
+    lateinit var viewModel: SignUpViewModel
 
 
 
@@ -52,35 +55,18 @@ class SingUpFragment @Inject constructor() : Fragment() {
         buttonCreate.setOnClickListener {
             val username = editTextCreateUsername.text.toString()
             val password = editTexCreatePassword.text.toString()
+            val sharedPreferences = requireContext().applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+            viewModel.createUser(username, password,sharedPreferences)
+        }
 
-            apiManager.createUser(username, password, object : Callback<Token> {
-                override fun onResponse(call: Call<Token>, response: Response<Token>) {
-                    if (response.isSuccessful) {
-                        val token = response.body()
-                        val jwt_token = token?.token
-                        val sharedPreferences = requireContext().applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        editor.putString("jwt_token", jwt_token)
-                        editor.apply()
-                        val fragmentManager = requireActivity().supportFragmentManager
-                        val transaction = fragmentManager.beginTransaction()
-                        transaction.replace(R.id.container, blankFragment)
-                        transaction.commit()
-
-                    } else {
-                        showToast("username already used!")
-                    }
-                }
-
-                override fun onFailure(call: Call<Token>, t: Throwable) {
-                    showToast("connect error!")
-                }
-            })
+        viewModel.messageLiveData.observe(viewLifecycleOwner) { message ->
+            showToast(message)
         }
     }
+
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), "Message: $message", Toast.LENGTH_SHORT).show()
     }
-
-
 }
+
+

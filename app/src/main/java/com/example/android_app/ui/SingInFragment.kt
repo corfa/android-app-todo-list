@@ -13,6 +13,7 @@ import android.widget.Toast
 import com.example.android_app.MyApplication
 import com.example.android_app.R
 import com.example.android_app.data.Token
+import com.example.android_app.models.SignInViewModel
 import com.example.android_app.network.ApiManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -28,7 +29,8 @@ class SingInFragment @Inject constructor(): Fragment() {
     private lateinit var buttonLogin: Button
 
     @Inject
-    lateinit var apiManager: ApiManager
+    lateinit var viewModel: SignInViewModel
+
 
     @Inject
     lateinit var singUpFragment: SingUpFragment
@@ -72,32 +74,22 @@ class SingInFragment @Inject constructor(): Fragment() {
             val username = editTextUsername.text.toString()
             val password = editTextPassword.text.toString()
 
-            apiManager.authUser(username, password, object : Callback<Token> {
-                override fun onResponse(call: Call<Token>, response: Response<Token>) {
-                    if (response.isSuccessful) {
-                        val token = response.body()?.token
-
-                        val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-
-                        editor.putString("jwt_token", token)
-                        editor.apply()
-
-                        val newFragment = BlankFragment()
-                        val fragmentManager = requireActivity().supportFragmentManager
-                        val transaction = fragmentManager.beginTransaction()
-                        transaction.replace(R.id.container, newFragment)
-                        transaction.commit()
-                    } else {
-                        Toast.makeText(requireContext(), "Ошибка авторизации", Toast.LENGTH_SHORT).show()
-                    }
+            viewModel.authenticateUser(username, password).observe(viewLifecycleOwner) { success ->
+                if (success) {
+                    val token = viewModel.getToken()
+                    val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                    viewModel.saveToken(sharedPreferences,token)
+                    val newFragment = BlankFragment()
+                    val fragmentManager = requireActivity().supportFragmentManager
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.replace(R.id.container, newFragment)
+                    transaction.commit()
+                } else {
+                    Toast.makeText(requireContext(), "Ошибка авторизации", Toast.LENGTH_SHORT).show()
                 }
-
-                override fun onFailure(call: Call<Token>, t: Throwable) {
-                    Toast.makeText(requireContext(), "Ошибка при выполнении запроса ${t.toString()}", Toast.LENGTH_SHORT).show()
-                }
-            })
+            }
         }
+
 
 
 
