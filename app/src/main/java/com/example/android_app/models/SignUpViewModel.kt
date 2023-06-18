@@ -18,7 +18,7 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
     private val _messageLiveData = MutableLiveData<String>()
     val messageLiveData: LiveData<String> = _messageLiveData
 
-    fun createUser(username: String, password: String,sharedPreferences: SharedPreferences) {
+    fun createUser(username: String, password: String, sharedPreferences: SharedPreferences, callback: (Boolean) -> Unit) {
         apiManager.createUser(username, password, object : Callback<Token> {
             override fun onResponse(call: Call<Token>, response: Response<Token>) {
                 if (response.isSuccessful) {
@@ -30,14 +30,18 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                     editor.apply()
 
                     _messageLiveData.postValue("User created successfully")
+                    callback(true) // Успешный ответ
                 } else {
                     _messageLiveData.postValue("Username already used!")
+                    callback(false) // Неуспешный ответ
                 }
             }
 
             override fun onFailure(call: Call<Token>, t: Throwable) {
                 _messageLiveData.postValue("Connection error!")
+                callback(false) // Неуспешный ответ
             }
         })
     }
+
 }

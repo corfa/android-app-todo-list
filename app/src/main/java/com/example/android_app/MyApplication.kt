@@ -6,6 +6,7 @@ import com.example.android_app.di.AppModule
 import com.example.android_app.models.SignInViewModel
 import com.example.android_app.models.SignUpViewModel
 import com.example.android_app.ui.BlankFragment
+import com.example.android_app.ui.BlankViewModel
 import com.example.android_app.ui.SingInFragment
 import com.example.android_app.ui.SingUpFragment
 import dagger.Component
@@ -16,7 +17,8 @@ interface ApplicationComponent {
     fun inject(activity: MainActivity)
     fun inject(viewModel: SignInViewModel)
     fun inject(viewModel: SignUpViewModel)
-//    fun inject(viewModel: BlankViewModel)
+
+    fun inject(viewModel: BlankViewModel)
     fun inject(fragment: SingUpFragment)
     fun inject(fragment: SingInFragment)
 

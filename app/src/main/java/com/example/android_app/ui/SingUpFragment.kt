@@ -27,8 +27,7 @@ class SingUpFragment @Inject constructor() : Fragment() {
     private lateinit var editTexCreatePassword: EditText
     private lateinit var buttonCreate: Button
 
-    @Inject
-    lateinit var apiManager: ApiManager
+
     @Inject
     lateinit var blankFragment: BlankFragment
     @Inject
@@ -56,8 +55,19 @@ class SingUpFragment @Inject constructor() : Fragment() {
             val username = editTextCreateUsername.text.toString()
             val password = editTexCreatePassword.text.toString()
             val sharedPreferences = requireContext().applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-            viewModel.createUser(username, password,sharedPreferences)
+
+            viewModel.createUser(username, password, sharedPreferences) { success ->
+                if (success) {
+                    val fragmentManager = requireActivity().supportFragmentManager
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.replace(R.id.container, blankFragment)
+                    transaction.commit()
+                } else {
+                    showToast("username already in use")
+                }
+            }
         }
+
 
         viewModel.messageLiveData.observe(viewLifecycleOwner) { message ->
             showToast(message)
@@ -68,5 +78,4 @@ class SingUpFragment @Inject constructor() : Fragment() {
         Toast.makeText(requireContext(), "Message: $message", Toast.LENGTH_SHORT).show()
     }
 }
-
 

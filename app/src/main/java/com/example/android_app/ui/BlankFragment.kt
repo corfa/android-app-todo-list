@@ -1,10 +1,7 @@
 package com.example.android_app.ui
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,10 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.android_app.MyApplication
 import com.example.android_app.R
 import com.example.android_app.data.Item
-import com.example.android_app.network.ApiManager
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import javax.inject.Inject
 
 class BlankFragment @Inject constructor() : Fragment() {
@@ -31,7 +24,7 @@ class BlankFragment @Inject constructor() : Fragment() {
 
 
     @Inject
-    lateinit var myViewModel: MyViewModel
+    lateinit var viewModel: BlankViewModel
 
     private lateinit var recyclerView: RecyclerView
 
@@ -53,14 +46,14 @@ class BlankFragment @Inject constructor() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (requireActivity().application as MyApplication).appComponent.inject(this)
         recyclerView = view.findViewById(R.id.recyclerView)
-        recyclerView.adapter = myViewModel.adapter
-        myViewModel.token=token
-        myViewModel.adapter.setItemClickListener(object : ItemClickListener {
+        recyclerView.adapter = viewModel.adapter
+        viewModel.token=token
+        viewModel.adapter.setItemClickListener(object : ItemClickListener {
 
 
 
             override fun onItemCheckboxClicked(item: Item) {
-                myViewModel.removeItem(item)
+                viewModel.removeItem(item)
             }
 
 
@@ -71,7 +64,7 @@ class BlankFragment @Inject constructor() : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        myViewModel.updateData()
+        viewModel.updateData()
 
 
         addButton.setOnClickListener {
@@ -92,8 +85,8 @@ class BlankFragment @Inject constructor() : Fragment() {
             val fragmentManager = requireActivity().supportFragmentManager
             val transaction = fragmentManager.beginTransaction()
             transaction.replace(R.id.container, SingInFragment())
-            transaction.remove(this@BlankFragment)
             transaction.commit()
+
         }
 
 
@@ -114,7 +107,7 @@ class BlankFragment @Inject constructor() : Fragment() {
             }
             else {
 
-                myViewModel.addItem(newDoing)
+                viewModel.addItem(newDoing)
                 inputField.visibility = View.GONE
                 addButtonInLayout.visibility = View.GONE
                 inputLayout.visibility = View.VISIBLE
