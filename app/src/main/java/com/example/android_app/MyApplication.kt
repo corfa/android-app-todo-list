@@ -13,10 +13,10 @@ import dagger.Component
 @Component(modules = [AppModule::class])
 interface ApplicationComponent {
     fun inject(fragment: BlankFragment)
-
     fun inject(activity: MainActivity)
     fun inject(viewModel: SignInViewModel)
     fun inject(viewModel: SignUpViewModel)
+//    fun inject(viewModel: BlankViewModel)
     fun inject(fragment: SingUpFragment)
     fun inject(fragment: SingInFragment)
 

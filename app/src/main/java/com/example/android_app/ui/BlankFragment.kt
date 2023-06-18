@@ -27,21 +27,16 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class BlankFragment @Inject constructor() : Fragment() {
-    @Inject
-    lateinit var apiManager: ApiManager
+
+
 
     @Inject
-    lateinit var adapter: MyListAdapter
-
+    lateinit var myViewModel: MyViewModel
 
     private lateinit var recyclerView: RecyclerView
 
-
-
-
     private lateinit var token: String
 
-    private var isDeleteInProgress = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (requireActivity().application as MyApplication).appComponent.inject(this)
@@ -58,40 +53,14 @@ class BlankFragment @Inject constructor() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (requireActivity().application as MyApplication).appComponent.inject(this)
         recyclerView = view.findViewById(R.id.recyclerView)
-        recyclerView.adapter = adapter
-        adapter.setItemClickListener(object : ItemClickListener {
+        recyclerView.adapter = myViewModel.adapter
+        myViewModel.token=token
+        myViewModel.adapter.setItemClickListener(object : ItemClickListener {
 
 
 
             override fun onItemCheckboxClicked(item: Item) {
-                if (!isDeleteInProgress) {
-                    item.id?.let {
-                        isDeleteInProgress = true
-
-                        apiManager.deleteDoing(it, token, object : Callback<Item?> {
-                            @SuppressLint("NotifyDataSetChanged")
-                            override fun onResponse(call: Call<Item?>, response: Response<Item?>) {
-                                if (response.isSuccessful) {
-                                    val position = adapter.getPositionOfItem(item) // Get the correct item position
-                                    adapter.removeItem(item)
-                                    adapter.notifyItemRemoved(position)
-                                } else {
-                                    // Handle the error
-                                }
-
-
-                                val delayMillis = 700L
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    isDeleteInProgress = false
-                                }, delayMillis)
-                            }
-
-                            override fun onFailure(call: Call<Item?>, t: Throwable) {
-                                isDeleteInProgress = false
-                            }
-                        })
-                    }
-                }
+                myViewModel.removeItem(item)
             }
 
 
@@ -102,26 +71,7 @@ class BlankFragment @Inject constructor() : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        apiManager.getTasks(token, object : Callback<List<Item>> {
-            override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
-                if (response.isSuccessful) {
-                    val itemList = response.body()
-
-                    val dataList = itemList ?: emptyList()
-                    adapter.updateData(dataList)
-                } else {
-                    showToast("connect error!")
-                    val newFragment = SingUpFragment()
-                    val fragmentManager = requireActivity().supportFragmentManager
-                    val transaction = fragmentManager.beginTransaction()
-                    transaction.replace(R.id.container, newFragment)
-                    transaction.commit()
-                }
-            }
-
-            override fun onFailure(call: Call<List<Item>>, t: Throwable) {
-            }
-        })
+        myViewModel.updateData()
 
 
         addButton.setOnClickListener {
@@ -164,36 +114,7 @@ class BlankFragment @Inject constructor() : Fragment() {
             }
             else {
 
-                apiManager.createDoing(newDoing, token, object : Callback<Item?> {
-                    @SuppressLint("NotifyDataSetChanged")
-                    override fun onResponse(call: Call<Item?>, response: Response<Item?>) {
-                        if (response.isSuccessful) {
-                            val item = response.body()
-                            if (item != null) {
-                                adapter.addItem(item)
-                                adapter.notifyItemInserted(adapter.itemCount - 1)
-                                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-                            } else {
-                                showToast("connect error!")
-                            }
-                        } else {
-                            showToast("connect error!")
-//                            val intent = Intent(requireContext(), SingInActivity::class.java)
-//                            startActivity(intent)
-//                            requireActivity().finish()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<Item?>, t: Throwable) {
-//                        val intent = Intent(requireContext(), SingInActivity::class.java)
-//                        startActivity(intent)
-//                        requireActivity().finish()
-                    }
-                })
-
-
-
-
+                myViewModel.addItem(newDoing)
                 inputField.visibility = View.GONE
                 addButtonInLayout.visibility = View.GONE
                 inputLayout.visibility = View.VISIBLE
