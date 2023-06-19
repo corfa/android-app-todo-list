@@ -67,8 +67,6 @@ class SingUpFragment @Inject constructor() : Fragment() {
                     val transaction = fragmentManager.beginTransaction()
                     transaction.replace(R.id.container, blankFragment)
                     transaction.commit()
-                } else {
-                    showToast("username already in use")
                 }
             }
         }

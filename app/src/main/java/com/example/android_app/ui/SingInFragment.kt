@@ -73,28 +73,28 @@ class SingInFragment @Inject constructor(): Fragment() {
         buttonLogin.setOnClickListener {
             val username = editTextUsername.text.toString()
             val password = editTextPassword.text.toString()
+            val sharedPreferences = requireContext().applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
-            viewModel.authenticateUser(username, password).observe(viewLifecycleOwner) { success ->
+            viewModel.authenticateUser(username, password, sharedPreferences) { success ->
                 if (success) {
-                    val token = viewModel.getToken()
-                    val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                    viewModel.saveToken(sharedPreferences,token)
-                    val newFragment = BlankFragment()
                     val fragmentManager = requireActivity().supportFragmentManager
                     val transaction = fragmentManager.beginTransaction()
-                    transaction.replace(R.id.container, newFragment)
+                    transaction.replace(R.id.container, blankFragment)
                     transaction.commit()
-                } else {
-                    Toast.makeText(requireContext(), "Ошибка авторизации", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+
+        viewModel.messageLiveData.observe(viewLifecycleOwner) { message ->
+            showToast(message)
         }
 
 
 
 
-
-
+    }
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), "Message: $message", Toast.LENGTH_SHORT).show()
     }
 
 }

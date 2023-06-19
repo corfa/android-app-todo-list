@@ -11,41 +11,37 @@ import retrofit2.Callback
 import retrofit2.Response
 import javax.inject.Inject
 
-
 class SignInViewModel @Inject constructor() : ViewModel() {
     @Inject
     lateinit var apiManager: ApiManager
-    private var token: String = ""
 
-    fun authenticateUser(username: String, password: String): LiveData<Boolean> {
-        val resultLiveData = MutableLiveData<Boolean>()
+    private val _messageLiveData = MutableLiveData<String>()
+    val messageLiveData: LiveData<String> = _messageLiveData
 
+    fun authenticateUser(username: String, password: String, sharedPreferences: SharedPreferences, callback: (Boolean) -> Unit){
         apiManager.authUser(username, password, object : Callback<Token> {
             override fun onResponse(call: Call<Token>, response: Response<Token>) {
                 if (response.isSuccessful) {
-                    token = response.body()?.token ?: ""
+                    val token = response.body()
+                    val jwtToken = token?.token
+                    val editor = sharedPreferences.edit()
+                    editor.putString("jwt_token", jwtToken)
+                    editor.apply()
+                    _messageLiveData.postValue("Welcome back!")
+                    callback(true)
 
-                    resultLiveData.postValue(true)
                 } else {
-                    resultLiveData.postValue(false)
+                    _messageLiveData.postValue("Username not found!")
+                    callback(false)
+
                 }
             }
 
             override fun onFailure(call: Call<Token>, t: Throwable) {
-                resultLiveData.postValue(false)
+                _messageLiveData.postValue("Connection error!")
+                callback(false)
             }
         })
-
-        return resultLiveData
     }
 
-    fun saveToken(sharedPreferences: SharedPreferences, token: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("jwt_token", token)
-        editor.apply()
-    }
-
-    fun getToken(): String {
-        return token
-    }
 }
