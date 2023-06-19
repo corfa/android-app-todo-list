@@ -3,7 +3,9 @@ package com.example.android_app
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.lifecycle.Observer
 import com.example.android_app.data.TokenValid
+import com.example.android_app.models.MainViewModel
 import com.example.android_app.network.ApiManager
 import com.example.android_app.ui.BlankFragment
 import com.example.android_app.ui.SingInFragment
@@ -15,11 +17,11 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var apiManager: ApiManager
-    @Inject
     lateinit var blankFragment: BlankFragment
     @Inject
     lateinit var singInFragment: SingInFragment
+    @Inject
+    lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         supportActionBar?.hide()
@@ -30,47 +32,24 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         val jwtToken = sharedPreferences.getString("jwt_token", "")
 
-        if (jwtToken.isNullOrEmpty()) {
+        if (jwtToken.isNullOrBlank()) {
             supportFragmentManager.beginTransaction()
                 .add(R.id.container, singInFragment)
                 .commit()
         } else {
-
-            apiManager.checkToken(jwtToken, object : Callback<TokenValid> {
-                override fun onResponse(call: Call<TokenValid>, response: Response<TokenValid>) {
-                    if (response.isSuccessful) {
-                        supportFragmentManager.beginTransaction()
-                            .add(R.id.container, blankFragment)
-                            .commit()
-
-                    } else {
-                        supportFragmentManager.beginTransaction()
-                            .add(R.id.container, singInFragment)
-                            .commit()
-                    }
-                }
-
-                override fun onFailure(call: Call<TokenValid>, t: Throwable) {
+            viewModel.checkToken(jwtToken)
+            viewModel.tokenValid.observe(this, Observer<TokenValid> { tokenValid ->
+                if (tokenValid != null) {
+                    supportFragmentManager.beginTransaction()
+                        .add(R.id.container, blankFragment)
+                        .commit()
+                } else {
+                    supportFragmentManager.beginTransaction()
+                        .add(R.id.container, singInFragment)
+                        .commit()
                 }
             })
-
-//            val btnExit = findViewById<ImageView>(R.id.btnExit)
-//
-//
-//
-//            btnExit.setOnClickListener {
-//                val sharedPreferences = applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-//                val editor = sharedPreferences.edit()
-//                editor.remove("jwt_token")
-//                editor.apply()
-//                supportFragmentManager.beginTransaction()
-//                    .add(R.id.container, singInFragment)
-//                    .commit()
-//
-//            }
         }
-
-
     }
 }
 
