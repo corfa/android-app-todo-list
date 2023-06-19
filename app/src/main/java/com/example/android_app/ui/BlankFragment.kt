@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android_app.MyApplication
@@ -68,13 +69,16 @@ class BlankFragment @Inject constructor() : Fragment() {
 
 
         addButton.setOnClickListener {
-
             inputLayout.visibility = View.VISIBLE
             inputField.visibility = View.VISIBLE
             addButtonInLayout.visibility = View.VISIBLE
             inputField.requestFocus()
             addButton.visibility = View.GONE
+
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(inputField, InputMethodManager.SHOW_IMPLICIT)
         }
+
 
         btnExit.setOnClickListener {
             val sharedPreferences = requireActivity().applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -97,7 +101,7 @@ class BlankFragment @Inject constructor() : Fragment() {
 
             val newDoing= inputField.text.toString()
             if (newDoing.isEmpty()){
-                showToast(token)
+                showToast("empty Input")
                 inputField.visibility = View.GONE
                 addButtonInLayout.visibility = View.GONE
                 inputLayout.visibility = View.VISIBLE

@@ -22,35 +22,37 @@ class BlankViewModel @Inject constructor() : ViewModel() {
 
     public  lateinit var token: String
 
+    private val isAddInProgress = AtomicBoolean(false)
+
     fun addItem(newDoing: String) {
-        apiManager.createDoing(newDoing, token, object : Callback<Item?> {
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onResponse(call: Call<Item?>, response: Response<Item?>) {
-                if (response.isSuccessful) {
-                    val item = response.body()
-                    if (item != null) {
-                        adapter.addItem(item)
-                        adapter.notifyItemInserted(adapter.itemCount - 1)
+        if (!isAddInProgress.getAndSet(true)) {
+            apiManager.createDoing(newDoing, token, object : Callback<Item?> {
+                @SuppressLint("NotifyDataSetChanged")
+                override fun onResponse(call: Call<Item?>, response: Response<Item?>) {
+                    if (response.isSuccessful) {
+                        val item = response.body()
+                        if (item != null) {
+                            adapter.addItem(item)
+                            adapter.notifyItemInserted(adapter.itemCount - 1)
+                        } else {
+                            // Handle the error
+                        }
                     } else {
-
+                        // Handle the error
                     }
-                } else {
 
-//                            val intent = Intent(requireContext(), SingInActivity::class.java)
-//                            startActivity(intent)
-//                            requireActivity().finish()
+                    val delayMillis = 700L
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        isAddInProgress.set(false)
+                    }, delayMillis)
                 }
-            }
 
-            override fun onFailure(call: Call<Item?>, t: Throwable) {
-//                        val intent = Intent(requireContext(), SingInActivity::class.java)
-//                        startActivity(intent)
-//                        requireActivity().finish()
-            }
-        })
-
-
-
+                override fun onFailure(call: Call<Item?>, t: Throwable) {
+                    // Handle the failure
+                    isAddInProgress.set(false)
+                }
+            })
+        }
     }
 
     private val isDeleteInProgress = AtomicBoolean(false)
@@ -61,7 +63,7 @@ class BlankViewModel @Inject constructor() : ViewModel() {
                 apiManager.deleteDoing(id, token, object : Callback<Item?> {
                     override fun onResponse(call: Call<Item?>, response: Response<Item?>) {
                         if (response.isSuccessful) {
-                            val position = adapter.getPositionOfItem(item) // Get the correct item position
+                            val position = adapter.getPositionOfItem(item)
                             adapter.removeItem(item)
                             adapter.notifyItemRemoved(position)
                         } else {

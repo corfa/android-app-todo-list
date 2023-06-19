@@ -30,16 +30,16 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                     editor.apply()
 
                     _messageLiveData.postValue("User created successfully")
-                    callback(true) // Успешный ответ
+                    callback(true)
                 } else {
                     _messageLiveData.postValue("Username already used!")
-                    callback(false) // Неуспешный ответ
+                    callback(false)
                 }
             }
 
             override fun onFailure(call: Call<Token>, t: Throwable) {
                 _messageLiveData.postValue("Connection error!")
-                callback(false) // Неуспешный ответ
+                callback(false)
             }
         })
     }

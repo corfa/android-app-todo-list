@@ -61,6 +61,17 @@
                 android:layout_marginTop="16dp"
                 android:text="Create" />
 
+            <TextView
+                android:id="@+id/textViewAlreadyHaveAccount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/buttonCreate"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="Already have an account?"
+                android:textColor="@android:color/holo_blue_dark"
+                android:textStyle="bold" />
+
         </LinearLayout>
 
     </ScrollView>

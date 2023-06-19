@@ -13,33 +13,26 @@ import javax.inject.Inject
 
 
 class SignInViewModel @Inject constructor() : ViewModel() {
-    // объявите необходимые данные для авторизации
     @Inject
     lateinit var apiManager: ApiManager
-    private var token: String = "" // переменная для хранения токена
+    private var token: String = ""
 
-    // метод для выполнения авторизации
     fun authenticateUser(username: String, password: String): LiveData<Boolean> {
         val resultLiveData = MutableLiveData<Boolean>()
 
-        // выполните логику авторизации через apiManager
         apiManager.authUser(username, password, object : Callback<Token> {
             override fun onResponse(call: Call<Token>, response: Response<Token>) {
                 if (response.isSuccessful) {
-                    // успешная авторизация
                     token = response.body()?.token ?: ""
-                    // сохраните токен или другие данные, если необходимо
 
-                    resultLiveData.postValue(true) // уведомите о успешной авторизации
+                    resultLiveData.postValue(true)
                 } else {
-                    // ошибка авторизации
-                    resultLiveData.postValue(false) // уведомите об ошибке авторизации
+                    resultLiveData.postValue(false)
                 }
             }
 
             override fun onFailure(call: Call<Token>, t: Throwable) {
-                // ошибка при выполнении запроса
-                resultLiveData.postValue(false) // уведомите об ошибке при выполнении запроса
+                resultLiveData.postValue(false)
             }
         })
 
@@ -52,7 +45,6 @@ class SignInViewModel @Inject constructor() : ViewModel() {
         editor.apply()
     }
 
-    // метод для получения токена
     fun getToken(): String {
         return token
     }

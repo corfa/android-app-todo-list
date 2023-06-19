@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import com.example.android_app.MainActivity
 import com.example.android_app.MyApplication
@@ -26,10 +27,13 @@ class SingUpFragment @Inject constructor() : Fragment() {
     private lateinit var editTextCreateUsername: EditText
     private lateinit var editTexCreatePassword: EditText
     private lateinit var buttonCreate: Button
+    private lateinit var textViewAlreadyHaveAccount: TextView
+
 
 
     @Inject
     lateinit var blankFragment: BlankFragment
+
     @Inject
     lateinit var viewModel: SignUpViewModel
 
@@ -48,6 +52,7 @@ class SingUpFragment @Inject constructor() : Fragment() {
         editTextCreateUsername = view.findViewById(R.id.editTextCreateUsername)
         editTexCreatePassword = view.findViewById(R.id.editTexCreatePassword)
         buttonCreate = view.findViewById(R.id.buttonCreate)
+        textViewAlreadyHaveAccount = view.findViewById(R.id.textViewAlreadyHaveAccount)
 
         (requireActivity().application as MyApplication).appComponent.inject(this)
 
@@ -67,7 +72,12 @@ class SingUpFragment @Inject constructor() : Fragment() {
                 }
             }
         }
-
+        textViewAlreadyHaveAccount.setOnClickListener{
+            val fragmentManager = requireActivity().supportFragmentManager
+            val transaction = fragmentManager.beginTransaction()
+            transaction.replace(R.id.container, SingInFragment())
+            transaction.commit()
+        }
 
         viewModel.messageLiveData.observe(viewLifecycleOwner) { message ->
             showToast(message)
